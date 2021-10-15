@@ -1,5 +1,6 @@
 const { getTiles } = require("./src/tiles");
 const { getRack } = require("./src/rack");
+const { pickRackType, enterRack } = require("./src/player");
 const {
   getPremutations,
   getAnagrams,
@@ -10,7 +11,12 @@ const {
 const { getHighestScoringWord } = require("./src/scoring");
 
 (async () => {
-  const rack = await getRack(await getTiles());
+  const rackType = await pickRackType();
+  console.log(rackType)
+  const rack =
+    rackType.toUpperCase() === "A"
+      ? await getRack(await getTiles())
+      : await enterRack();
   const premutations = await getPremutations(rack, 2);
   const anagrams = await getAnagrams(premutations);
   const validWords = await getValidWords(anagrams, await getPossibleWords());

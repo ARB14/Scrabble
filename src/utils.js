@@ -100,7 +100,7 @@ module.exports.getAllObjectsWithMaxTL = async (
       [tripleLetterWordScores[0]]
     )
     .map((e) => {
-      if (!e.wordIndex) {
+      if (!e?.wordIndex) {
         return;
       }
       return e.wordIndex;
