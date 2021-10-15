@@ -30,3 +30,19 @@ module.exports.getTiles = async () => {
   ];
   return letterSet.flat();
 };
+
+module.exports.getTileScores = async () => {
+  return [
+    1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 1, 1, 3, 10, 1, 1, 1, 1, 4, 4, 8, 4,
+    10,
+  ];
+};
+
+module.exports.getTripleLetterScores = async () => {
+  const tileScores = await this.getTileScores();
+  const tripleLetterScores = [];
+  for await (const tileScore of tileScores) {
+    tripleLetterScores.push(tileScore * 3);
+  }
+  return tripleLetterScores;
+};

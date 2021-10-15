@@ -1,5 +1,14 @@
 const fs = require("fs").promises;
 
+const getAllIndexes = (wordScores, value) => {
+  var indexes = [],
+    i = -1;
+  while ((i = wordScores.indexOf(value, i + 1)) != -1) {
+    indexes.push(i);
+  }
+  return indexes;
+};
+
 module.exports.getPremutations = async (rack, minWordLength) => {
   const premute = (n, srcRack, rackLetters, allPremutations) => {
     if (n == 0) {
@@ -44,19 +53,64 @@ module.exports.getValidWords = async (anagrams, possibleWords) => {
   const possibleWordsUC = possibleWords.map((possibleWord) =>
     possibleWord.toUpperCase()
   );
-  return await anagrams.filter((r) => possibleWordsUC.includes(r));
+  const validWords = await anagrams.filter((r) => possibleWordsUC.includes(r));
+  return await this.dedupe(validWords);
 };
 
 module.exports.getLongestWord = async (validWords) => {
-  let longestWord = "";
+  const longestWord = [];
   validWords.forEach((word) => {
-    if (longestWord === "") {
-      longestWord = word;
-    } else {
-      if (word.split("").length > longestWord.split().length) {
-        longestWord = word;
-      }
+    if (!longestWord.length) {
+      longestWord.push(word);
+    }
+
+    if (word.split("").length > longestWord[0].split("").length) {
+      longestWord.length = 0;
+      longestWord.push(word);
+    }
+
+    if (word.split("").length === longestWord[0].split("").length) {
+      longestWord.push(word);
     }
   });
-  return longestWord;
+  return await this.dedupe(longestWord);
+};
+
+module.exports.dedupe = async (array) => {
+  return [...new Set(array)];
+};
+
+module.exports.getAllMaxIndexes = (wordScores) => {
+  return getAllIndexes(wordScores, Math.max.apply(null, wordScores));
+};
+
+module.exports.getAllObjectsWithMaxTL = async (
+  tripleLetterWordScores,
+  validWords
+) => {
+  const highestTripleScores = tripleLetterWordScores
+    .reduce(
+      (a, b) => {
+        let current = a.pop();
+        if (current.tripleLetterWordScore < b.tripleLetterWordScore) return [b];
+        if (current.tripleLetterWordScore === b.tripleLetterWordScore)
+          return [...a, current, b];
+        return [...a, current];
+      },
+      [tripleLetterWordScores[0]]
+    )
+    .map((e) => {
+      if (!e.wordIndex) {
+        return;
+      }
+      return e.wordIndex;
+    });
+
+  const highestTLWords = [];
+
+  for await (const highestTripleScore of highestTripleScores) {
+    highestTLWords.push(validWords[highestTripleScore]);
+  }
+
+  return highestTLWords;
 };
